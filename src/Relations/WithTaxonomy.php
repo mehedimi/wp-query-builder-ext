@@ -5,7 +5,7 @@ namespace Mehedi\WPQueryBuilderExt\Relations;
 use Mehedi\WPQueryBuilder\Query\Join;
 use Mehedi\WPQueryBuilder\Relations\Relation;
 
-class Taxonomy extends Relation
+class WithTaxonomy extends Relation
 {
     /**
      * Taxonomy types

@@ -2,7 +2,7 @@
 
 namespace Mehedi\WPQueryBuilderTestsExt\Unit;
 
-use Mehedi\WPQueryBuilderExt\Relations\Taxonomy;
+use Mehedi\WPQueryBuilderExt\Relations\WithTaxonomy;
 use Mehedi\WPQueryBuilderTestsExt\BuilderHelper;
 use Mehedi\WPQueryBuilderTestsExt\FakeWPDB;
 use PHPUnit\Framework\TestCase;
@@ -16,9 +16,9 @@ class TaxonomyTest extends TestCase
      */
     function it_can_add_relation()
     {
-        $builder = $this->builder()->addRelation(new Taxonomy('taxonomies', $this->builder()));
+        $builder = $this->builder()->addRelation(new WithTaxonomy('taxonomies', $this->builder()));
 
-        $this->assertInstanceOf(Taxonomy::class, $builder->with[0]);
+        $this->assertInstanceOf(WithTaxonomy::class, $builder->with[0]);
     }
 
     /**
@@ -36,14 +36,14 @@ class TaxonomyTest extends TestCase
             return [];
         });
 
-        (new Taxonomy('taxonomies'))->setItems([(object)['ID' => 1]])->load();
+        (new WithTaxonomy('taxonomies'))->setItems([(object)['ID' => 1]])->load();
 
         FakeWPDB::add('get_results', function ($sql) {
             $this->assertEquals("select wp_terms.*, wp_term_taxonomy.count, wp_term_taxonomy.taxonomy, wp_term_relationships.object_id from wp_terms inner join wp_term_relationships on wp_terms.term_id = wp_terms.term_id and wp_term_relationships.object_id in (1) inner join wp_term_taxonomy on wp_term_taxonomy.term_taxonomy_id = wp_term_relationships.term_taxonomy_id and wp_term_taxonomy.taxonomy in ('category')", $sql);
             return [];
         });
 
-        (new Taxonomy('taxonomies'))
+        (new WithTaxonomy('taxonomies'))
             ->taxonomy('category')
             ->setItems([(object)['ID' => 1]])
             ->load();
@@ -74,7 +74,7 @@ class TaxonomyTest extends TestCase
             return $taxonomies;
         });
 
-        $data = (new Taxonomy('taxonomies'))->setItems([(object)['ID' => 1]])->load();
+        $data = (new WithTaxonomy('taxonomies'))->setItems([(object)['ID' => 1]])->load();
 
         $this->assertEquals([
             (object)[
@@ -83,7 +83,7 @@ class TaxonomyTest extends TestCase
             ]
         ], $data);
 
-        $data = (new Taxonomy('taxonomies'))->groupByTaxonomy()->setItems([(object)['ID' => 1]])->load();
+        $data = (new WithTaxonomy('taxonomies'))->groupByTaxonomy()->setItems([(object)['ID' => 1]])->load();
 
         $this->assertEquals([
             (object)[
