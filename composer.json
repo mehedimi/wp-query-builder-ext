@@ -1,0 +1,31 @@
+{
+    "name": "mehedimi/wp-query-builder-ext",
+    "description": "An Extension of WP Query Builder",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Mehedi\\WPQueryBuilderExt\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Mehedi\\WPQueryBuilderTestsExt\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Mehedi Hasan",
+            "email": "mehedihasansabbirmi@gmail.com",
+            "homepage": "https://mehedi.im",
+            "role": "Developer"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "symfony/var-dumper": "^5.4",
+        "mockery/mockery": "^1.5"
+    },
+    "require": {
+        "mehedimi/wp-query-builder": "dev-main"
+    }
+}
