@@ -24,7 +24,7 @@ class TaxonomyTest extends TestCase
     /**
      * @test
      */
-    function it_can_generate_current_sql_query()
+    function it_can_generate_currect_sql_query()
     {
         $this->initFakeDB();
         FakeWPDB::add('prepare', function ($sql, ...$args) {

@@ -36,7 +36,7 @@ class JoinWithPostMetaTest extends TestCase
     /**
      * @test
      */
-    function it_can_generate_current_sql()
+    function it_can_generate_currect_sql()
     {
         $this->initFakeDB();
 
