@@ -1,8 +1,8 @@
+![WP Query Builder Extension Banner](https://banners.beyondco.de/WP%20Query%20Builder%20Extension.png?theme=light&packageManager=composer+require&packageName=mehedimi%2Fwp-query-builder-ext&pattern=architect&style=style_1&description=An+Extension+of+WP+Query+Builder&md=1&showWatermark=0&fontSize=100px&images=document-duplicate)
+
 ## WP Query Builder Extension
 
 This is an extension of [WP Query Builder].
-
-![WP Query Builder Extension Banner](https://banners.beyondco.de/WP%20Query%20Builder%20Extension.png?theme=light&packageManager=composer+require&packageName=mehedimi%2Fwp-query-builder-ext&pattern=architect&style=style_1&description=An+Extension+of+WP+Query+Builder&md=1&showWatermark=0&fontSize=100px&images=document-duplicate)
 
 ### Installation
 
