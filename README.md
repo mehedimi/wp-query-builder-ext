@@ -23,7 +23,7 @@ With this relation you will be able to load associative taxonomies of specific p
 ```php
 // Retrieve all posts with associative taxonomies.
 DB::table('posts')
-->addRelation(new WithTaxonomy('taxonomies'))
+->withRelation(new WithTaxonomy('taxonomies'))
 ->get()
 ```
 
@@ -32,7 +32,7 @@ If you need group by taxonomy type then just call `groupByTaxonomy` method on `W
 ```php
 // Retrieve all posts with associative taxonomies group by with its type.
 DB::table('posts')
-->addRelation(new WithTaxonomy('taxonomies'), function(WithTaxonomy $taxonomy){
+->withRelation(new WithTaxonomy('taxonomies'), function(WithTaxonomy $taxonomy){
     $taxonomy->groupByTaxonomy()
 })
 ->get();
@@ -43,7 +43,7 @@ Optionally you add constrain of taxonomy type by calling `taxonomy` method of `W
 ```php
 // This will fetch only category type of taxonomy.
 DB::table('posts')
-    ->addRelation(new WithTaxonomy('categories'), function(WithTaxonomy $taxonomy){
+    ->withRelation(new WithTaxonomy('categories'), function(WithTaxonomy $taxonomy){
         $taxonomy->taxonomy('category');
     })->get();
 ```
