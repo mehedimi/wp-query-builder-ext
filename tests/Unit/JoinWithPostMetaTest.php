@@ -2,6 +2,7 @@
 
 namespace Mehedi\WPQueryBuilderTestsExt\Unit;
 
+use Mehedi\WPQueryBuilder\Query\Grammar;
 use Mehedi\WPQueryBuilder\Query\Join;
 use Mehedi\WPQueryBuilderExt\Plugins\JoinPostWithMeta;
 use Mehedi\WPQueryBuilderTestsExt\BuilderHelper;
@@ -36,14 +37,14 @@ class JoinWithPostMetaTest extends TestCase
     /**
      * @test
      */
-    function it_can_generate_currect_sql()
+    function it_can_generate_correct_sql()
     {
-        $this->initFakeDB();
+        Grammar::getInstance()->setTablePrefix('wp_');
 
-        FakeWPDB::add('get_results', function ($sql) {
-            $this->assertEquals('select * from wp_posts inner join wp_postmeta on wp_posts.ID = wp_postmeta.post_id limit 10', $sql);
-        });
+        $sql = 'select * from wp_posts inner join wp_postmeta on wp_posts.ID = wp_postmeta.post_id limit 10';
 
-        $this->builder()->plugin(new JoinPostWithMeta())->limit(10)->get();
+        $outSql = $this->builder()->plugin(new JoinPostWithMeta())->limit(10)->toSQL();
+
+        $this->assertEquals($sql, $outSql);
     }
 }
