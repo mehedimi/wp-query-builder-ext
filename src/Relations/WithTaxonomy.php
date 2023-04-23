@@ -42,35 +42,29 @@ class WithTaxonomy extends Relation
      */
     protected $groupBy = false;
 
-
     /**
-     * Extract object IDs
+     * Set one or many taxonomy type
      *
-     * @return array
+     * @param array|string $taxonomy
+     * @return $this
      */
-    public function extractObjectKeys()
+    public function taxonomy($taxonomy)
     {
-        return array_column($this->items, 'ID');
+        $this->taxonomies = is_array($taxonomy) ? $taxonomy : [$taxonomy];
+
+        return $this;
     }
 
     /**
-     * @inheritDoc
+     * Set group by taxonomy state
+     *
+     * @param $state
+     * @return $this
      */
-    protected function getLoadedItems()
+    public function groupByTaxonomy($state = true)
     {
-        return $this->builder
-            ->from($this->termTableName)
-            ->select($this->termTableName . '.*', $this->termTaxonomyTable . '.count', $this->termTaxonomyTable . '.taxonomy', $this->termRelationshipTable . '.object_id')
-            ->join($this->termRelationshipTable, function (Join $join) {
-                $join->on(
-                    $this->termTableName . '.term_id', '=', $this->termTableName . '.term_id'
-                )->whereIn($this->termRelationshipTable . '.object_id', $this->extractObjectKeys());
-            })->join($this->termTaxonomyTable, function (Join $join) {
-                $join->on($this->termTaxonomyTable . '.term_taxonomy_id', '=', $this->termRelationshipTable . '.term_taxonomy_id');
-                if (!empty($this->taxonomies)) {
-                    $join->whereIn($this->termTaxonomyTable . '.taxonomy', $this->taxonomies);
-                }
-            })->get();
+        $this->groupBy = $state;
+        return $this;
     }
 
     /**
@@ -95,6 +89,36 @@ class WithTaxonomy extends Relation
     /**
      * @inheritDoc
      */
+    protected function getLoadedItems()
+    {
+        return $this->builder
+            ->from($this->termTableName)
+            ->select($this->termTableName . '.*', $this->termTaxonomyTable . '.count', $this->termTaxonomyTable . '.taxonomy', $this->termRelationshipTable . '.object_id')
+            ->join($this->termRelationshipTable, function (Join $join) {
+                $join->on(
+                    $this->termTableName . '.term_id', '=', $this->termTableName . '.term_id'
+                )->whereIn($this->termRelationshipTable . '.object_id', $this->extractObjectKeys());
+            })->join($this->termTaxonomyTable, function (Join $join) {
+                $join->on($this->termTaxonomyTable . '.term_taxonomy_id', '=', $this->termRelationshipTable . '.term_taxonomy_id');
+                if (!empty($this->taxonomies)) {
+                    $join->whereIn($this->termTaxonomyTable . '.taxonomy', $this->taxonomies);
+                }
+            })->get();
+    }
+
+    /**
+     * Extract object IDs
+     *
+     * @return array
+     */
+    public function extractObjectKeys()
+    {
+        return array_column($this->items, 'ID');
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function getItemFromDictionary($loadedItems, $item)
     {
         if (array_key_exists($item->ID, $loadedItems)) {
@@ -102,30 +126,5 @@ class WithTaxonomy extends Relation
         }
 
         return [];
-    }
-
-    /**
-     * Set one or many taxonomy type
-     *
-     * @param array|string $taxonomy
-     * @return $this
-     */
-    public function taxonomy($taxonomy)
-    {
-        $this->taxonomies = is_array($taxonomy) ? $taxonomy : [$taxonomy];
-
-        return $this;
-    }
-
-    /**
-     * Set group by taxonomy state
-     *
-     * @param $state
-     * @return $this
-     */
-    public function groupByTaxonomy($state = true)
-    {
-        $this->groupBy = $state;
-        return $this;
     }
 }

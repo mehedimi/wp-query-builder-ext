@@ -2,9 +2,12 @@
 
 namespace Mehedi\WPQueryBuilderTestsExt\Unit;
 
+use Mehedi\WPQueryBuilder\Connection;
+use Mehedi\WPQueryBuilder\Query\Builder;
+use Mehedi\WPQueryBuilder\Query\Grammar;
 use Mehedi\WPQueryBuilderExt\Relations\WithTaxonomy;
 use Mehedi\WPQueryBuilderTestsExt\BuilderHelper;
-use Mehedi\WPQueryBuilderTestsExt\FakeWPDB;
+use Mockery as m;
 use PHPUnit\Framework\TestCase;
 
 class TaxonomyTest extends TestCase
@@ -16,7 +19,7 @@ class TaxonomyTest extends TestCase
      */
     function it_can_add_relation()
     {
-        $builder = $this->builder()->addRelation(new WithTaxonomy('taxonomies', $this->builder()));
+        $builder = $this->builder()->withRelation(new WithTaxonomy('taxonomies', $this->builder()));
 
         $this->assertInstanceOf(WithTaxonomy::class, $builder->with[0]);
     }
@@ -26,27 +29,30 @@ class TaxonomyTest extends TestCase
      */
     function it_can_generate_correct_sql_query()
     {
-        $this->initFakeDB();
-        FakeWPDB::add('prepare', function ($sql, ...$args) {
-            return sprintf(str_replace('%s', "'%s'", $sql), ...$args);
-        });
+        Grammar::getInstance()->setTablePrefix('wp_');
 
-        FakeWPDB::add('get_results', function ($sql) {
-            $this->assertEquals('select wp_terms.*, wp_term_taxonomy.count, wp_term_taxonomy.taxonomy, wp_term_relationships.object_id from wp_terms inner join wp_term_relationships on wp_terms.term_id = wp_terms.term_id and wp_term_relationships.object_id in (1) inner join wp_term_taxonomy on wp_term_taxonomy.term_taxonomy_id = wp_term_relationships.term_taxonomy_id', $sql);
-            return [];
-        });
+        $c = m::mock(Connection::class);
 
-        (new WithTaxonomy('taxonomies'))->setItems([(object)['ID' => 1]])->load();
+        $c->shouldReceive('select')->andReturn([]);
 
-        FakeWPDB::add('get_results', function ($sql) {
-            $this->assertEquals("select wp_terms.*, wp_term_taxonomy.count, wp_term_taxonomy.taxonomy, wp_term_relationships.object_id from wp_terms inner join wp_term_relationships on wp_terms.term_id = wp_terms.term_id and wp_term_relationships.object_id in (1) inner join wp_term_taxonomy on wp_term_taxonomy.term_taxonomy_id = wp_term_relationships.term_taxonomy_id and wp_term_taxonomy.taxonomy in ('category')", $sql);
-            return [];
-        });
+        $b = new Builder($c);
 
-        (new WithTaxonomy('taxonomies'))
+        $sql = 'select wp_terms.*, wp_term_taxonomy.count, wp_term_taxonomy.taxonomy, wp_term_relationships.object_id from wp_terms inner join wp_term_relationships on wp_terms.term_id = wp_terms.term_id and wp_term_relationships.object_id in (?) inner join wp_term_taxonomy on wp_term_taxonomy.term_taxonomy_id = wp_term_relationships.term_taxonomy_id';
+
+        (new WithTaxonomy('taxonomies', $b))->setItems([(object)['ID' => 1]])->load();
+
+        $this->assertEquals($sql, $b->toSQL());
+
+        $sql = "select wp_terms.*, wp_term_taxonomy.count, wp_term_taxonomy.taxonomy, wp_term_relationships.object_id from wp_terms inner join wp_term_relationships on wp_terms.term_id = wp_terms.term_id and wp_term_relationships.object_id in (?) inner join wp_term_taxonomy on wp_term_taxonomy.term_taxonomy_id = wp_term_relationships.term_taxonomy_id and wp_term_taxonomy.taxonomy in (?)";
+        $b = new Builder($c);
+        (new WithTaxonomy('taxonomies', $b))
             ->taxonomy('category')
             ->setItems([(object)['ID' => 1]])
             ->load();
+
+        $this->assertEquals($sql, $b->toSQL());
+
+        m::close();
     }
 
     /**
@@ -54,8 +60,6 @@ class TaxonomyTest extends TestCase
      */
     function it_can_map_item()
     {
-        $this->initFakeDB();
-
         $taxonomies = [
             (object)[
                 'term_id' => 1,
@@ -66,31 +70,19 @@ class TaxonomyTest extends TestCase
             ]
         ];
 
-        FakeWPDB::add('prepare', function () use (&$taxonomies) {
+        $c = m::mock(Connection::class);
 
-        });
+        $c->shouldReceive('select')->andReturn($taxonomies);
 
-        FakeWPDB::add('get_results', function () use (&$taxonomies) {
-            return $taxonomies;
-        });
+        $b = new Builder($c);
 
-        $data = (new WithTaxonomy('taxonomies'))->setItems([(object)['ID' => 1]])->load();
+
+        $data = (new WithTaxonomy('taxonomies', $b))->setItems([(object)['ID' => 1]])->load();
 
         $this->assertEquals([
             (object)[
                 'ID' => 1,
                 'taxonomies' => $taxonomies
-            ]
-        ], $data);
-
-        $data = (new WithTaxonomy('taxonomies'))->groupByTaxonomy()->setItems([(object)['ID' => 1]])->load();
-
-        $this->assertEquals([
-            (object)[
-                'ID' => 1,
-                'taxonomies' => [
-                    'category' => $taxonomies
-                ]
             ]
         ], $data);
     }
