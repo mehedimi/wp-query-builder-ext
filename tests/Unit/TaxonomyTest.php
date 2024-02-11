@@ -37,13 +37,13 @@ class TaxonomyTest extends TestCase
 
         $b = new Builder($c);
 
-        $sql = 'select wp_terms.*, wp_term_taxonomy.count, wp_term_taxonomy.taxonomy, wp_term_relationships.object_id from wp_terms inner join wp_term_relationships on wp_terms.term_id = wp_terms.term_id and wp_term_relationships.object_id in (?) inner join wp_term_taxonomy on wp_term_taxonomy.term_taxonomy_id = wp_term_relationships.term_taxonomy_id';
+        $sql = 'select wp_terms.*, wp_term_taxonomy.count, wp_term_taxonomy.taxonomy, wp_term_relationships.object_id from wp_terms inner join wp_term_relationships on wp_terms.term_id = wp_terms.term_id and wp_term_relationships.object_id in (?) inner join wp_term_taxonomy on wp_term_taxonomy.term_taxonomy_id = wp_term_relationships.term_taxonomy_id and wp_terms.term_id = wp_term_taxonomy.term_id';
 
         (new WithTaxonomy('taxonomies', $b))->setItems([(object)['ID' => 1]])->load();
 
         $this->assertEquals($sql, $b->toSQL());
 
-        $sql = "select wp_terms.*, wp_term_taxonomy.count, wp_term_taxonomy.taxonomy, wp_term_relationships.object_id from wp_terms inner join wp_term_relationships on wp_terms.term_id = wp_terms.term_id and wp_term_relationships.object_id in (?) inner join wp_term_taxonomy on wp_term_taxonomy.term_taxonomy_id = wp_term_relationships.term_taxonomy_id and wp_term_taxonomy.taxonomy in (?)";
+        $sql = "select wp_terms.*, wp_term_taxonomy.count, wp_term_taxonomy.taxonomy, wp_term_relationships.object_id from wp_terms inner join wp_term_relationships on wp_terms.term_id = wp_terms.term_id and wp_term_relationships.object_id in (?) inner join wp_term_taxonomy on wp_term_taxonomy.term_taxonomy_id = wp_term_relationships.term_taxonomy_id and wp_terms.term_id = wp_term_taxonomy.term_id and wp_term_taxonomy.taxonomy = ?";
         $b = new Builder($c);
         (new WithTaxonomy('taxonomies', $b))
             ->taxonomy('category')
@@ -51,6 +51,15 @@ class TaxonomyTest extends TestCase
             ->load();
 
         $this->assertEquals($sql, $b->toSQL());
+
+        $sql = "select wp_terms.*, wp_term_taxonomy.count, wp_term_taxonomy.taxonomy, wp_term_relationships.object_id from wp_terms inner join wp_term_relationships on wp_terms.term_id = wp_terms.term_id and wp_term_relationships.object_id in (?) inner join wp_term_taxonomy on wp_term_taxonomy.term_taxonomy_id = wp_term_relationships.term_taxonomy_id and wp_terms.term_id = wp_term_taxonomy.term_id and wp_term_taxonomy.taxonomy in (?, ?)";
+        $c = new Builder($c);
+        (new WithTaxonomy('taxonomies', $c))
+            ->taxonomy(['category', 'tags'])
+            ->setItems([(object)['ID' => 1]])
+            ->load();
+
+        $this->assertEquals($sql, $c->toSQL());
 
         m::close();
     }

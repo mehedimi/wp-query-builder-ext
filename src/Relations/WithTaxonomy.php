@@ -99,9 +99,15 @@ class WithTaxonomy extends Relation
                     $this->termTableName . '.term_id', '=', $this->termTableName . '.term_id'
                 )->whereIn($this->termRelationshipTable . '.object_id', $this->extractObjectKeys());
             })->join($this->termTaxonomyTable, function (Join $join) {
-                $join->on($this->termTaxonomyTable . '.term_taxonomy_id', '=', $this->termRelationshipTable . '.term_taxonomy_id');
+                $join->on($this->termTaxonomyTable . '.term_taxonomy_id', '=', $this->termRelationshipTable . '.term_taxonomy_id')
+                    ->whereColumn($this->termTableName.'.term_id', '=', $this->termTaxonomyTable.'.term_id');
+
                 if (!empty($this->taxonomies)) {
-                    $join->whereIn($this->termTaxonomyTable . '.taxonomy', $this->taxonomies);
+                    if (count($this->taxonomies) === 1) {
+                        $join->where($this->termTaxonomyTable . '.taxonomy', $this->taxonomies[0]);
+                    } else {
+                        $join->whereIn($this->termTaxonomyTable . '.taxonomy', $this->taxonomies);
+                    }
                 }
             })->get();
     }
